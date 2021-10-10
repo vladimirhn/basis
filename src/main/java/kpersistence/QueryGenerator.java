@@ -76,9 +76,11 @@ public class QueryGenerator {
 
     public static UnnamedParametersQuery generateSelectSimilarQuery(Object obj) throws AnnotationException {
 
+        Class<?> type = obj.getClass();
+
         Map<String, Object> columnsToValues = getColumnToValues(obj);
 
-        String sql = generateSelectSimilarQuerySql(extractTableName(obj.getClass()), columnsToValues);
+        String sql = generateSelectSimilarQuerySql(type, extractTableName(type), columnsToValues);
         List<Object> values = new ArrayList<>(columnsToValues.size());
 
         columnsToValues.keySet().forEach(col -> {
@@ -88,12 +90,11 @@ public class QueryGenerator {
         return new UnnamedParametersQuery(sql, values);
     }
 
-    private static String generateSelectSimilarQuerySql(String tableName, Map<String, Object> columnsToValues) {
+    private static <T> String generateSelectSimilarQuerySql(Class<T> type, String tableName, Map<String, Object> columnsToValues) {
 
-        String mainPart = "SELECT * FROM " + tableName +
-                    " WHERE 1 = 1";
+        String mainPart = generateSelectAllQueryWithForeigns(type, tableName);
 
-        String tail = "";
+        String tail = " WHERE 1 = 1";
         for (String column : columnsToValues.keySet()) {
             tail += " AND " + column + " = ?";
         }
@@ -169,6 +170,11 @@ public class QueryGenerator {
         Map<String, Object> columnsToValues = getColumnToValues(obj);
         String idColumn = extractIdColumnName(obj);
         Object idValue = columnsToValues.get(idColumn);
+
+        if (idValue == null) {
+            throw new IllegalStateException("Updated model must have id!");
+        }
+
         columnsToValues.remove(idColumn);//Must be last in WHERE clause
 
         String sql = generateUpdateQuerySql(extractTableName(obj.getClass()), columnsToValues);
