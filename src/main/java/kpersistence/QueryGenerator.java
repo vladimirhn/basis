@@ -34,10 +34,24 @@ public class QueryGenerator {
 
         List<Field> orders = ClassUtils.getFieldsByAnnotation(type, OrderBy.class);
         if (orders.size() == 1) {
-            sql += " ORDER BY "
-                    + orders.get(0).getAnnotation(Column.class).name()
-                    + " "
-                    + orders.get(0).getAnnotation(OrderBy.class).direction().name();
+
+            if (orders.get(0).isAnnotationPresent(Column.class)) {
+                sql += " ORDER BY "
+                        + orders.get(0).getAnnotation(Column.class).name()
+                        + " "
+                        + orders.get(0).getAnnotation(OrderBy.class).direction().name();
+
+            } else if (orders.get(0).isAnnotationPresent(Foreign.class)) {
+
+                Class<?> foreignTableClass = orders.get(0).getAnnotation(Foreign.class).table();
+                String foreignTableName = extractTableName(foreignTableClass);
+                String foreignColumnName = ClassUtils
+                        .getFieldsByAnnotation(foreignTableClass, Label.class).get(0)
+                        .getAnnotation(Column.class).name();
+
+                sql += " ORDER BY " + foreignTableName + "." + foreignColumnName + " " + orders.get(0).getAnnotation(OrderBy.class).direction().name();
+
+            }
         }
 
         return sql;
