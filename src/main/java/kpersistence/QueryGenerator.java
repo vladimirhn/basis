@@ -11,6 +11,8 @@ import kutils.ClassUtils;
 
 public class QueryGenerator {
 
+    public static CurrentUserIdProvider currentUserIdProvider;
+
     public static UnnamedParametersQuery generateSelectOneQuery(String id, Class<?> type) throws AnnotationException {
         String tableName = extractTableName(type);
         String idColumn = extractIdColumnName(type);
@@ -261,11 +263,22 @@ public class QueryGenerator {
                     Object value = null;
                     try {
                         value = field.get(obj);
-                    } catch (IllegalAccessException ex) {}
+                    } catch (IllegalAccessException ignored) {}
 
                     if (field.isAnnotationPresent(Column.class) && value != null) {
 
                         columnToValues.put(field.getAnnotation(Column.class).name(), value);
+
+                    } else if (field.isAnnotationPresent(CurrentUserId.class)
+                            && currentUserIdProvider != null
+                            && currentUserIdProvider.getCurrentUserId() != null) {
+
+                        columnToValues.put(field.getAnnotation(CurrentUserId.class).columnName(), currentUserIdProvider.getCurrentUserId());
+
+                    } else if (field.isAnnotationPresent(CurrentUserId.class)
+                            && (currentUserIdProvider == null || currentUserIdProvider.getCurrentUserId() == null)) {
+
+                        columnToValues.put(field.getAnnotation(CurrentUserId.class).columnName(), value);
                     }
                 });
         return columnToValues;
