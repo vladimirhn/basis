@@ -34,6 +34,17 @@ public class QueryGenerator {
             sql = generateSelectAllQueryWithForeigns(type, tableName);
         }
 
+        List<Field> currentUserId = ClassUtils.getFieldsByAnnotation(type, CurrentUserId.class);
+        if (currentUserId.size() == 1) {
+
+            String userIdColumnName = currentUserId.get(0).getAnnotation(CurrentUserId.class).columnName();
+
+            if (currentUserIdProvider != null && currentUserIdProvider.getCurrentUserId() != null) {
+                sql += " WHERE " + userIdColumnName + " = '" + currentUserIdProvider.getCurrentUserId() + "'";
+
+            }
+        }
+
         List<Field> orders = ClassUtils.getFieldsByAnnotation(type, OrderBy.class);
         if (orders.size() == 1) {
 
