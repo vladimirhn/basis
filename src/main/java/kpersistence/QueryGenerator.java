@@ -24,21 +24,20 @@ public class QueryGenerator {
 
     public static <T> String generateSelectAllQuery(Class<T> type) throws AnnotationException {
 
+        String sql;
         String tableName = extractTableName(type);
 
-        String sql;
+        List<Field> currentUserId = ClassUtils.getFieldsByAnnotation(type, CurrentUserId.class);
+        String userIdColumnName = currentUserId.get(0).getAnnotation(CurrentUserId.class).columnName();
 
         if (ClassUtils.getFieldsByAnnotation(type, Foreign.class).isEmpty()) {
             sql = "SELECT * FROM " + tableName;
         } else {
             sql = generateSelectAllQueryWithForeigns(type, tableName);
+            userIdColumnName = tableName+"."+userIdColumnName;
         }
 
-        List<Field> currentUserId = ClassUtils.getFieldsByAnnotation(type, CurrentUserId.class);
         if (currentUserId.size() == 1) {
-
-            String userIdColumnName = currentUserId.get(0).getAnnotation(CurrentUserId.class).columnName();
-
             if (currentUserIdProvider != null && currentUserIdProvider.getCurrentUserId() != null) {
                 sql += " WHERE " + userIdColumnName + " = '" + currentUserIdProvider.getCurrentUserId() + "'";
 
@@ -332,7 +331,7 @@ public class QueryGenerator {
         return idColumn;
     }
 
-    private static String extractTableName(Class<?> type) throws AnnotationException {
+    public static String extractTableName(Class<?> type) throws AnnotationException {
 
         if (!type.isAnnotationPresent(Table.class)) {
             throw new TableAnnotationException("Аннотация @Table не найдена");
