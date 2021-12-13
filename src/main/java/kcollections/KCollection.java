@@ -366,6 +366,32 @@ public abstract class KCollection<K extends kcollections.KCollection<K, X, T>, X
         return false;
     }
 
+    //Уникализация (distinct)
+    @SafeVarargs
+    public final K distinct(Function<T, ?>... getters) {
+
+        if (getJCollection().isEmpty()) {
+            return streamToNewKCollectionWithMotherSize(getJCollection().stream());
+        }
+
+        LinkedList<T> uniques = new LinkedList<>();
+        getJCollection().forEach(entry -> {
+            if (uniques.stream().noneMatch(unique -> Arrays.deepEquals(applyGetters(entry, getters), applyGetters(unique, getters)))) {
+                uniques.add(entry);
+            }
+        });
+
+        return streamToNewKCollectionWithMotherSize(uniques.stream());
+    }
+
+    private Object[] applyGetters(Object o, Function[] getters) {
+        Object[] result = new Object[getters.length];
+        for (int i = 0; i < getters.length; i++) {
+            result[i] = getters[i].apply(o);
+        }
+        return result;
+    }
+
     //Проверки
     //Простые проверки, без действий
     public boolean nonePassed() {

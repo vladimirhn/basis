@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 import kpersistence.exceptions.AnnotationException;
 import kpersistence.exceptions.TableAnnotationException;
 import kpersistence.mapping.annotations.*;
+import kpersistence.query.QueryProperties;
+import kpersistence.query.SqlPredicate;
 import kutils.ClassUtils;
 
 public class QueryGenerator {
@@ -22,30 +24,24 @@ public class QueryGenerator {
         return new UnnamedParametersQuery(sql, Collections.singletonList(id));
     }
 
-    public static <T> String generateSelectAllQuery(Class<T> type) throws AnnotationException {
+    public static <T> UnnamedParametersQuery generateSelectQuery(QueryProperties<T> props) {
 
-        String sql;
-        String tableName = extractTableName(type);
+        Class<T> type = props.getClazz();
+        String sql = generateSelectAllQuery(type);
+        List<Object> params = new LinkedList<>();
 
-        List<Field> currentUserId = ClassUtils.getFieldsByAnnotation(type, CurrentUserId.class);
-        String userIdColumnName = currentUserId.get(0).getAnnotation(CurrentUserId.class).columnName();
-
-        if (ClassUtils.getFieldsByAnnotation(type, Foreign.class).isEmpty()) {
-            sql = "SELECT * FROM " + tableName;
-        } else {
-            sql = generateSelectAllQueryWithForeigns(type, tableName);
-            userIdColumnName = tableName+"."+userIdColumnName;
-        }
-
-        if (currentUserId.size() == 1) {
-            if (currentUserIdProvider != null && currentUserIdProvider.getCurrentUserId() != null) {
-                sql += " WHERE " + userIdColumnName + " = '" + currentUserIdProvider.getCurrentUserId() + "'";
-
-            }
+        for (SqlPredicate predicate : props.getFilters()) {
+            sql += " AND " + predicate.getColumn() + String.format(predicate.getOperator().getUsage(), "?");
+            params.add(predicate.getValue());
         }
 
         List<Field> orders = ClassUtils.getFieldsByAnnotation(type, OrderBy.class);
-        if (orders.size() == 1) {
+
+        if (props.getOrderBy() != null) {
+
+            sql += " ORDER BY " + props.getOrderBy() + " " + props.getOrderDirection().name();
+
+        } else  if (orders.size() == 1) {
 
             if (orders.get(0).isAnnotationPresent(Column.class)) {
                 sql += " ORDER BY "
@@ -65,6 +61,55 @@ public class QueryGenerator {
 
             }
         }
+
+        return new UnnamedParametersQuery(sql, params);
+    }
+
+    public static <T> String generateSelectAllQuery(Class<T> type) throws AnnotationException {
+
+        String sql;
+        String tableName = extractTableName(type);
+
+        List<Field> currentUserId = ClassUtils.getFieldsByAnnotation(type, CurrentUserId.class);
+        String userIdColumnName = currentUserId.get(0).getAnnotation(CurrentUserId.class).columnName();
+
+        if (ClassUtils.getFieldsByAnnotation(type, Foreign.class).isEmpty()) {
+            sql = "SELECT * FROM " + tableName;
+        } else {
+            sql = generateSelectAllQueryWithForeigns(type, tableName);
+            userIdColumnName = tableName+"."+userIdColumnName;
+        }
+
+        sql += " WHERE 1 = 1 ";
+
+        if (currentUserId.size() == 1) {
+            if (currentUserIdProvider != null && currentUserIdProvider.getCurrentUserId() != null) {
+                sql += " AND " + userIdColumnName + " = '" + currentUserIdProvider.getCurrentUserId() + "'";
+
+            }
+        }
+
+//        List<Field> orders = ClassUtils.getFieldsByAnnotation(type, OrderBy.class);
+//        if (orders.size() == 1) {
+//
+//            if (orders.get(0).isAnnotationPresent(Column.class)) {
+//                sql += " ORDER BY "
+//                        + orders.get(0).getAnnotation(Column.class).name()
+//                        + " "
+//                        + orders.get(0).getAnnotation(OrderBy.class).direction().name();
+//
+//            } else if (orders.get(0).isAnnotationPresent(Foreign.class)) {
+//
+//                Class<?> foreignTableClass = orders.get(0).getAnnotation(Foreign.class).table();
+//                String foreignTableName = extractTableName(foreignTableClass);
+//                String foreignColumnName = ClassUtils
+//                        .getFieldsByAnnotation(foreignTableClass, Label.class).get(0)
+//                        .getAnnotation(Column.class).name();
+//
+//                sql += " ORDER BY " + foreignTableName + "." + foreignColumnName + " " + orders.get(0).getAnnotation(OrderBy.class).direction().name();
+//
+//            }
+//        }
 
         return sql;
     }
