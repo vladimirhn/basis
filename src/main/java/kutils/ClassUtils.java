@@ -9,6 +9,10 @@ import java.util.List;
 
 public class ClassUtils {
 
+    public static List<Field> getFields(Class<?> type) {
+        return Arrays.asList(type.getDeclaredFields());
+    }
+
     public static List<Field> getFieldsUpToObject(Class<?> type) {
         List<Field> result = new ArrayList<>();
         return getFieldsUpToObject(result, type);
@@ -31,6 +35,16 @@ public class ClassUtils {
                 fields.add(field);
         });
         return fields;
+    }
+
+    public static Field getFirstFieldByAnnotation(Class<?> type, Class<? extends Annotation> ann) {
+        List<Field> fields = getFieldsByAnnotation(type, ann);
+
+        if (fields.isEmpty()) {
+            throw new IllegalArgumentException(type.getSimpleName() + "doesn't have a filed with " + ann.getSimpleName() + " annotation");
+        }
+
+        return fields.get(0);
     }
 
     public static Field getFieldByName(Class<?> type, String name) {

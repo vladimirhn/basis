@@ -4,9 +4,12 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import kcollections.KList;
 import kpersistence.exceptions.AnnotationException;
 import kpersistence.exceptions.TableAnnotationException;
 import kpersistence.mapping.annotations.*;
+import kpersistence.query.KFilter;
 import kpersistence.query.QueryProperties;
 import kpersistence.query.SqlPredicate;
 import kutils.ClassUtils;
@@ -110,6 +113,111 @@ public class QueryGenerator {
 //
 //            }
 //        }
+
+        return sql;
+    }
+
+    public static <T> UnnamedParametersQuery generateSelectFilteredQuery(Class<T> type, KFilter filter) throws AnnotationException {
+
+        String sql;
+        String tableName = extractTableName(type);
+
+        List<Field> currentUserId = ClassUtils.getFieldsByAnnotation(type, CurrentUserId.class);
+        String userIdColumnName = currentUserId.get(0).getAnnotation(CurrentUserId.class).columnName();
+
+        if (ClassUtils.getFieldsByAnnotation(type, Foreign.class).isEmpty()) {
+            sql = "SELECT * FROM " + tableName;
+        } else {
+            sql = generateSelectAllQueryWithForeigns(type, tableName);
+            userIdColumnName = tableName + "." + userIdColumnName;
+        }
+
+        sql += " WHERE 1 = 1 ";
+
+        if (currentUserId.size() == 1) {
+            if (currentUserIdProvider != null && currentUserIdProvider.getCurrentUserId() != null) {
+                sql += " AND " + userIdColumnName + " = '" + currentUserIdProvider.getCurrentUserId() + "'";
+
+            }
+        }
+
+        KList<SqlPredicate> predicates = filter.getPredicates();
+        List<Object> values = new ArrayList<>(predicates.size());
+
+        for (SqlPredicate predicate : predicates) {
+            sql += " AND " + predicate.getColumn() + predicate.getOperator().getUnnamedUsage();
+            values.add(predicate.getValue());
+        }
+
+        return new UnnamedParametersQuery(sql, values);
+    }
+
+    public static <T> String generateSelectIdToLabelsQuery(Class<T> type) {
+
+        String sql;
+        String tableName = extractTableName(type);
+
+        List<Field> currentUserId = ClassUtils.getFieldsByAnnotation(type, CurrentUserId.class);
+        String userIdColumnName = currentUserId.get(0).getAnnotation(CurrentUserId.class).columnName();
+
+        String labelColumnName = ClassUtils
+                .getFieldsByAnnotation(type, Label.class).get(0)
+                .getAnnotation(Column.class).name();
+
+        sql = "SELECT id, " + labelColumnName + " FROM " + tableName;
+
+        sql += " WHERE 1 = 1 ";
+
+        if (currentUserId.size() == 1) {
+            if (currentUserIdProvider != null && currentUserIdProvider.getCurrentUserId() != null) {
+                sql += " AND " + userIdColumnName + " = '" + currentUserIdProvider.getCurrentUserId() + "'";
+
+            }
+        }
+
+        return sql;
+    }
+
+    public static <T> String generateSelectIdToLabelsWithParentQuery(Class<T> type) {
+
+        String sql;
+        String tableName = extractTableName(type);
+        String labelColumnName = ClassUtils
+                .getFirstFieldByAnnotation(type, Label.class)
+                .getAnnotation(Column.class).name();
+        String linkColumnName = ClassUtils
+                .getFirstFieldByAnnotation(type, ParentId.class)
+                .getAnnotation(Column.class).name();
+
+
+        Field parent = ClassUtils.getFirstFieldByAnnotation(type, ParentId.class);
+        Class<?> parentTableClass = parent.getAnnotation(ParentId.class).table();
+        String parentTableName = extractTableName(parentTableClass);
+        String parentLabelColumnName = ClassUtils
+                .getFirstFieldByAnnotation(parentTableClass, Label.class)
+                .getAnnotation(Column.class).name();
+
+        String select = "SELECT "
+                + parentTableName + ".ID, " + parentTableName + "." + parentLabelColumnName
+                + ", " + tableName + ".ID, " + tableName + "." + labelColumnName;
+
+        String from = " FROM " + tableName + " LEFT JOIN " + parentTableName +
+                      " ON " + tableName + "." + linkColumnName + " = " + parentTableName + ".ID";
+
+
+        sql = select + from;
+
+        sql += " WHERE 1 = 1 ";
+
+        List<Field> currentUserId = ClassUtils.getFieldsByAnnotation(parentTableClass, CurrentUserId.class);
+        String userIdColumnName = currentUserId.get(0).getAnnotation(CurrentUserId.class).columnName();
+
+        if (currentUserId.size() == 1) {
+            if (currentUserIdProvider != null && currentUserIdProvider.getCurrentUserId() != null) {
+                sql += " AND " + userIdColumnName + " = '" + currentUserIdProvider.getCurrentUserId() + "'";
+
+            }
+        }
 
         return sql;
     }
