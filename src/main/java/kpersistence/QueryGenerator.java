@@ -5,9 +5,12 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import kcollections.CollectionFactory;
 import kcollections.KList;
+import kpersistence.domain.Tables;
 import kpersistence.exceptions.AnnotationException;
 import kpersistence.exceptions.TableAnnotationException;
+import kpersistence.kfilters.SqlOperator;
 import kpersistence.mapping.annotations.*;
 import kpersistence.query.KFilter;
 import kpersistence.query.QueryProperties;
@@ -117,7 +120,7 @@ public class QueryGenerator {
         return sql;
     }
 
-    public static <T> UnnamedParametersQuery generateSelectFilteredQuery(Class<T> type, KFilter filter) throws AnnotationException {
+    public static <T> UnnamedParametersQuery generateSelectFilteredQuery(Class<T> type, Map<String, String> filters) throws AnnotationException {
 
         String sql;
         String tableName = extractTableName(type);
@@ -141,12 +144,53 @@ public class QueryGenerator {
             }
         }
 
-        KList<SqlPredicate> predicates = filter.getPredicates();
+        KList<SqlPredicate> predicates = CollectionFactory.makeLinkedList();
+        for (Map.Entry<String, String> filter : filters.entrySet()) {
+            String foreignId = filter.getValue();
+            StringBuilder foreignIdColumn = new StringBuilder();
+
+            ClassUtils.getFieldsByAnnotation(type, Destination.class).stream()
+                    .filter(field -> {
+                        Class<?> filterClass = Tables.getModelClassByName(filter.getKey());
+                        Class<?> foreignClass = field.getAnnotation(Destination.class).value();
+                        return Objects.equals(filterClass, foreignClass);
+                    })
+                    .findFirst().ifPresent(field -> {
+                foreignIdColumn.append(field.getAnnotation(Column.class).name());
+            });
+
+            if (foreignIdColumn.length() > 0) {
+                predicates.add(new SqlPredicate(foreignIdColumn.toString(), SqlOperator.EQUALS, foreignId));
+            }
+        }
+
         List<Object> values = new ArrayList<>(predicates.size());
 
         for (SqlPredicate predicate : predicates) {
             sql += " AND " + predicate.getColumn() + predicate.getOperator().getUnnamedUsage();
             values.add(predicate.getValue());
+        }
+
+        List<Field> orders = ClassUtils.getFieldsByAnnotation(type, OrderBy.class);
+        if (orders.size() == 1) {
+
+            if (orders.get(0).isAnnotationPresent(Column.class)) {
+                sql += " ORDER BY "
+                        + orders.get(0).getAnnotation(Column.class).name()
+                        + " "
+                        + orders.get(0).getAnnotation(OrderBy.class).direction().name();
+
+            } else if (orders.get(0).isAnnotationPresent(Foreign.class)) {
+
+                Class<?> foreignTableClass = orders.get(0).getAnnotation(Foreign.class).table();
+                String foreignTableName = extractTableName(foreignTableClass);
+                String foreignColumnName = ClassUtils
+                        .getFieldsByAnnotation(foreignTableClass, Label.class).get(0)
+                        .getAnnotation(Column.class).name();
+
+                sql += " ORDER BY " + foreignTableName + "." + foreignColumnName + " " + orders.get(0).getAnnotation(OrderBy.class).direction().name();
+
+            }
         }
 
         return new UnnamedParametersQuery(sql, values);
@@ -178,7 +222,7 @@ public class QueryGenerator {
         return sql;
     }
 
-    public static <T> String generateSelectIdToLabelsWithParentQuery(Class<T> type) {
+    public static <T> String generateSelectIdToLabelsWithParentQuery(Class<T> type, Class<?> filterClass) {
 
         String sql;
         String tableName = extractTableName(type);
@@ -197,15 +241,34 @@ public class QueryGenerator {
                 .getFirstFieldByAnnotation(parentTableClass, Label.class)
                 .getAnnotation(Column.class).name();
 
-        String select = "SELECT "
+        String select = "SELECT DISTINCT "
                 + parentTableName + ".ID, " + parentTableName + "." + parentLabelColumnName
                 + ", " + tableName + ".ID, " + tableName + "." + labelColumnName;
 
         String from = " FROM " + tableName + " LEFT JOIN " + parentTableName +
-                      " ON " + tableName + "." + linkColumnName + " = " + parentTableName + ".ID";
+                      " ON " + tableName + "." + linkColumnName + " = " + parentTableName + ".ID ";
 
 
         sql = select + from;
+
+        if (filterClass != null) {
+
+            StringBuilder rightJoin = new StringBuilder();
+
+            ClassUtils
+                    .getFieldsByAnnotation(filterClass, Destination.class)
+                    .stream().filter(field -> type.equals(field.getAnnotation(Destination.class).value()))
+                    .findFirst().ifPresent(field -> {
+                        String filterTableName = extractTableName(filterClass);
+                        String filterColumnName = field.getAnnotation(Column.class).name();
+                        rightJoin.append(
+                                  " RIGHT JOIN " + filterTableName + " ON "
+                                + filterTableName + "." + filterColumnName + " = " +tableName + ".ID "
+                        );
+            });
+
+            sql += rightJoin.toString();
+        }
 
         sql += " WHERE 1 = 1 ";
 
@@ -214,7 +277,7 @@ public class QueryGenerator {
 
         if (currentUserId.size() == 1) {
             if (currentUserIdProvider != null && currentUserIdProvider.getCurrentUserId() != null) {
-                sql += " AND " + userIdColumnName + " = '" + currentUserIdProvider.getCurrentUserId() + "'";
+                sql += " AND " + parentTableName + "." + userIdColumnName + " = '" + currentUserIdProvider.getCurrentUserId() + "'";
 
             }
         }
