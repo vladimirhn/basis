@@ -41,32 +41,32 @@ public class QueryGenerator {
             params.add(predicate.getValue());
         }
 
-        List<Field> orders = ClassUtils.getFieldsByAnnotation(type, OrderBy.class);
-
-        if (props.getOrderBy() != null) {
-
-            sql += " ORDER BY " + props.getOrderBy() + " " + props.getOrderDirection().name();
-
-        } else  if (orders.size() == 1) {
-
-            if (orders.get(0).isAnnotationPresent(Column.class)) {
-                sql += " ORDER BY "
-                        + orders.get(0).getAnnotation(Column.class).name()
-                        + " "
-                        + orders.get(0).getAnnotation(OrderBy.class).direction().name();
-
-            } else if (orders.get(0).isAnnotationPresent(Foreign.class)) {
-
-                Class<?> foreignTableClass = orders.get(0).getAnnotation(Foreign.class).table();
-                String foreignTableName = extractTableName(foreignTableClass);
-                String foreignColumnName = ClassUtils
-                        .getFieldsByAnnotation(foreignTableClass, Label.class).get(0)
-                        .getAnnotation(Column.class).name();
-
-                sql += " ORDER BY " + foreignTableName + "." + foreignColumnName + " " + orders.get(0).getAnnotation(OrderBy.class).direction().name();
-
-            }
-        }
+//        List<Field> orders = ClassUtils.getFieldsByAnnotation(type, OrderBy.class);
+//
+//        if (props.getOrderBy() != null) {
+//
+//            sql += " ORDER BY " + props.getOrderBy() + " " + props.getOrderDirection().name();
+//
+//        } else  if (orders.size() == 1) {
+//
+//            if (orders.get(0).isAnnotationPresent(Column.class)) {
+//                sql += " ORDER BY "
+//                        + orders.get(0).getAnnotation(Column.class).name()
+//                        + " "
+//                        + orders.get(0).getAnnotation(OrderBy.class).direction().name();
+//
+//            } else if (orders.get(0).isAnnotationPresent(Foreign.class)) {
+//
+//                Class<?> foreignTableClass = orders.get(0).getAnnotation(Foreign.class).table();
+//                String foreignTableName = extractTableName(foreignTableClass);
+//                String foreignColumnName = ClassUtils
+//                        .getFieldsByAnnotation(foreignTableClass, Label.class).get(0)
+//                        .getAnnotation(Column.class).name();
+//
+//                sql += " ORDER BY " + foreignTableName + "." + foreignColumnName + " " + orders.get(0).getAnnotation(OrderBy.class).direction().name();
+//
+//            }
+//        }
 
         return new UnnamedParametersQuery(sql, params);
     }
