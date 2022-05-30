@@ -4,10 +4,6 @@ import kcollections.functional.catchmethods.CatchMethod;
 import kcollections.functional.consumermethods.*;
 import kcollections.functional.getters.DoubleSupplier;
 import kcollections.functional.getters.IntegerSupplier;
-//import ro.kalite.entity.AbstractTb;
-//import ro.kalite.entity.Table;
-//import ro.kalite.logger.KaliteroLogger;
-//import ro.kalite.logger.KaliteroLoggerFactory;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -18,8 +14,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public abstract class KCollection<K extends kcollections.KCollection<K, X, T>, X extends Collection<T>, T> extends StandartCollectionWrapper<T> {
-
-//    private static final KaliteroLogger logger = KaliteroLoggerFactory.getLogger(kcollections.KCollection.class);
 
     protected abstract X getJCollection();
 
