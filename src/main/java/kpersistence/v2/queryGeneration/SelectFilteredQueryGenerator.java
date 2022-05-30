@@ -1,6 +1,7 @@
 package kpersistence.v2.queryGeneration;
 
 import kpersistence.v2.UnnamedParametersQuery;
+import kpersistence.v2.annotations.PersistenceAnnotationsUtils;
 import kpersistence.v2.modelsMaster.ModelsMaster;
 import kpersistence.v2.modelsMaster.TableModelForQueries;
 import kpersistence.v2.tables.StringIdTable;
@@ -91,13 +92,15 @@ public class SelectFilteredQueryGenerator {
                 Object foreignObject = foreignLinkField.get(model);
                 if (foreignObject != null) {
 
+                    String foreignTableName = PersistenceAnnotationsUtils.extractTableName(foreignObject.getClass());
+
                     for (String column : foreignColumnsToFieldMap.keySet()) {
                         Field field = foreignColumnsToFieldMap.get(column);
 
                         Object datum = field.get(foreignObject);
 
                         if (datum != null) {
-                            sql.append(" AND ").append(column).append(".").append(column).append(" = ?");
+                            sql.append(" AND ").append(foreignTableName).append(".").append(column).append(" = ?");
                             params.add(datum);
                         }
                     }

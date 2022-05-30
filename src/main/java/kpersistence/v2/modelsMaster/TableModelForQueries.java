@@ -1,6 +1,7 @@
 package kpersistence.v2.modelsMaster;
 
 import kpersistence.v2.annotations.Column;
+import kpersistence.v2.annotations.Foreign2;
 import kpersistence.v2.annotations.PersistenceAnnotationsUtils;
 import kutils.ClassUtils;
 
@@ -37,6 +38,10 @@ public class TableModelForQueries {
                     addForeign(foreignClass, columnName);
                 }
             }
+
+            if (field.isAnnotationPresent(Foreign2.class)) {
+                mapForeignToItsFields(field);
+            }
         });
     }
 
@@ -58,6 +63,24 @@ public class TableModelForQueries {
             }
         });
         parentTablesColumnsMap.put(foreignTableName, foreignColumns);
+    }
+
+    void mapForeignToItsFields(Field field) {
+        field.setAccessible(true);
+        Class<?> foreignClass = field.getType();
+
+        Map<String, Field> foreignColumnToFieldMap = new LinkedHashMap<>();
+
+        ClassUtils.getFieldsUpToObject(foreignClass).forEach(foreignField -> {
+            if (foreignField.isAnnotationPresent(Column.class)) {
+                foreignField.setAccessible(true);
+
+                String foreignColumn = foreignField.getAnnotation(Column.class).name();
+                foreignColumnToFieldMap.put(foreignColumn, foreignField);
+            }
+        });
+
+        foreignLinkFieldsToColumnToFieldMap.put(field, foreignColumnToFieldMap);
     }
 
     public String getUserId() {
