@@ -1,8 +1,8 @@
 package kpersistence.v2.mapping;
 
-import kpersistence.v2.modelsMaster.FieldProperties;
+import kpersistence.v2.modelsMaster.mapping.FieldProperties;
 import kpersistence.v2.modelsMaster.ModelsMaster;
-import kpersistence.v2.modelsMaster.TableModelForMapping;
+import kpersistence.v2.modelsMaster.mapping.TableModelForMapping;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -10,17 +10,19 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Map;
 
-public class MapperByModel<T> {
+public abstract class MapperByModel<T> {
 
-    Class<T> klass;
+    protected Class<T> klass;
 
     public MapperByModel(Class<T> klass) {
         this.klass = klass;
     }
 
+    protected abstract TableModelForMapping getMappingModel();
+
     public T mapRow(ResultSet rs, int i) {
 
-        TableModelForMapping mappingModel = ModelsMaster.getMappingModel(klass);
+        TableModelForMapping mappingModel = getMappingModel();
 
         List<FieldProperties> mainFieldPropertiesList = mappingModel.getMainBunchList();
         Map<Class<?>, List<FieldProperties>> parentClassPropertiesMap = mappingModel.getParentClassPropertiesMap();

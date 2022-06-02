@@ -1,4 +1,4 @@
-package kpersistence.v2.modelsMaster;
+package kpersistence.v2.modelsMaster.mapping;
 
 import java.sql.ResultSet;
 

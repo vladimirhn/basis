@@ -1,18 +1,16 @@
 package kpersistence.v2.queryGeneration.select;
 
 import kpersistence.v2.UnnamedParametersQuery;
-import kpersistence.v2.annotations.PersistenceAnnotationsUtils;
 import kpersistence.v2.modelsMaster.ModelsMaster;
-import kpersistence.v2.modelsMaster.TableModelForQueries;
+import kpersistence.v2.modelsMaster.queries.TableModelForAllDataQueries;
+import kpersistence.v2.modelsMaster.queries.TableModelForQueries;
 import kpersistence.v2.queryGeneration.select.parts.PredicatesQueryPart;
 import kpersistence.v2.queryGeneration.select.parts.SelectFromQueryPart;
 import kpersistence.v2.queryGeneration.select.parts.WhereUserIdQueryPart;
 import kpersistence.v2.tables.StringIdTable;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class SelectFilteredQueryGenerator {
 
@@ -23,8 +21,8 @@ public class SelectFilteredQueryGenerator {
     private final TableModelForQueries tableModel;
     private StringIdTable mainTable;
 
-    public SelectFilteredQueryGenerator(StringIdTable mainTable, String userId) {
-        tableModel = ModelsMaster.getQueryModel(mainTable.getClass());
+    public SelectFilteredQueryGenerator(TableModelForQueries tableModel, StringIdTable mainTable, String userId) {
+        this.tableModel = tableModel;
         this.userId = userId;
         this.mainTable = mainTable;
     }

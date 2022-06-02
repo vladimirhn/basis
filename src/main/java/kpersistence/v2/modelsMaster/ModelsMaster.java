@@ -1,9 +1,13 @@
 package kpersistence.v2.modelsMaster;
 
 import kpersistence.v2.annotations.Table;
+import kpersistence.v2.modelsMaster.mapping.TableModelForAllDataMapping;
+import kpersistence.v2.modelsMaster.mapping.TableModelForLabelsMapping;
+import kpersistence.v2.modelsMaster.mapping.TableModelForMapping;
+import kpersistence.v2.modelsMaster.queries.TableModelForAllDataQueries;
+import kpersistence.v2.modelsMaster.queries.TableModelForLabelsQueries;
 import kutils.PackageUtils;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,8 +16,10 @@ import java.util.stream.Collectors;
 public class ModelsMaster {
 
     class Bunch {
-        public TableModelForQueries queryModel;
-        public TableModelForMapping mappingModel;
+        public TableModelForAllDataQueries queryAllDataModel;
+        public TableModelForLabelsQueries queryLabelsModel;
+        public TableModelForMapping mappingAllDataModel;
+        public TableModelForMapping mappingLabelsModel;
     }
 
     public static final Map<Class<?>, Bunch> classBunchMap = new LinkedHashMap<>();
@@ -31,8 +37,10 @@ public class ModelsMaster {
              models.forEach(klass -> {
 
                  Bunch bunch = new Bunch();
-                 bunch.queryModel = new TableModelForQueries(klass);
-                 bunch.mappingModel = new TableModelForMapping(klass);
+                 bunch.queryAllDataModel = new TableModelForAllDataQueries(klass);
+                 bunch.queryLabelsModel = new TableModelForLabelsQueries(klass);
+                 bunch.mappingAllDataModel = new TableModelForAllDataMapping(klass);
+                 bunch.mappingLabelsModel = new TableModelForLabelsMapping(klass);
 
                  classBunchMap.put(klass, bunch);
              });
@@ -42,12 +50,19 @@ public class ModelsMaster {
         }
     }
 
-    public static TableModelForQueries getQueryModel(Class<?> klass) {
-         return classBunchMap.get(klass).queryModel;
+    public static TableModelForAllDataQueries getQueryAllDataModel(Class<?> klass) {
+         return classBunchMap.get(klass).queryAllDataModel;
     }
 
-    public static TableModelForMapping getMappingModel(Class<?> klass) {
-        return classBunchMap.get(klass).mappingModel;
+    public static TableModelForLabelsQueries getQueryLabelsModel(Class<?> klass) {
+         return classBunchMap.get(klass).queryLabelsModel;
+    }
+
+    public static TableModelForMapping getMappingAllDataModel(Class<?> klass) {
+        return classBunchMap.get(klass).mappingAllDataModel;
+    }
+    public static TableModelForMapping getMappingLabelsModel(Class<?> klass) {
+        return classBunchMap.get(klass).mappingLabelsModel;
     }
 
 }

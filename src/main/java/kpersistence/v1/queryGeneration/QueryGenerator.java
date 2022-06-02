@@ -16,11 +16,7 @@ import kpersistence.v1.kfilters.SqlOperator;
 import kpersistence.v1.mapping.annotations.*;
 import kpersistence.v1.query.QueryProperties;
 import kpersistence.v1.query.SqlPredicate;
-import kpersistence.v2.annotations.Column;
-import kpersistence.v2.annotations.Foreign2;
-import kpersistence.v2.annotations.Id;
-import kpersistence.v2.annotations.Table;
-import kpersistence.v2.queryGeneration.select.SelectAllQueryGenerator;
+import kpersistence.v2.annotations.*;
 import kutils.ClassUtils;
 
 public class QueryGenerator {

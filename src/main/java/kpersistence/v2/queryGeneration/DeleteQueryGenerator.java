@@ -2,8 +2,6 @@ package kpersistence.v2.queryGeneration;
 
 import kpersistence.v2.UnnamedParametersQuery;
 import kpersistence.v2.modelsMaster.ModelsMaster;
-import kpersistence.v2.modelsMaster.TableModelForQueries;
-import kpersistence.v2.tables.StringIdTable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +19,7 @@ public class DeleteQueryGenerator {
 
         this.id = id;
         this.userId = userId;
-        this.tableName = ModelsMaster.getQueryModel(model).getTableName();
+        this.tableName = ModelsMaster.getQueryAllDataModel(model).getTableName();
     }
 
     public UnnamedParametersQuery generateDeleteQuery() {

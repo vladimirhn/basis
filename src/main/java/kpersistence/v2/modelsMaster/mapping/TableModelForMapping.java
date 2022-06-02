@@ -1,15 +1,13 @@
-package kpersistence.v2.modelsMaster;
+package kpersistence.v2.modelsMaster.mapping;
 
-import kpersistence.v2.annotations.Column;
-import kpersistence.v2.annotations.Foreign2;
-import kpersistence.v2.annotations.PersistenceAnnotationsUtils;
+import kpersistence.v2.annotations.*;
 import kutils.ClassUtils;
 
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class TableModelForMapping {
+public abstract class TableModelForMapping {
 
     private final List<FieldProperties> mainFieldPropertiesList;
     private final Map<Class<?>, List<FieldProperties>> parentClassPropertiesMap = new LinkedHashMap<>();
@@ -26,6 +24,8 @@ public class TableModelForMapping {
     public Map<Class<?>, Field> getParentClassToMainFieldMap() {
         return parentClassToMainFieldMap;
     }
+
+    protected abstract boolean pickFieldCondition(Field field);
 
     public TableModelForMapping(Class<?> mainClass) {
 
@@ -48,7 +48,7 @@ public class TableModelForMapping {
 
         FieldProperties fieldProperties = null;
 
-        if (field.isAnnotationPresent(Column.class)) {
+        if (pickFieldCondition(field)) {
             field.setAccessible(true);
 
             String columnName = field.getAnnotation(Column.class).name();
@@ -63,7 +63,7 @@ public class TableModelForMapping {
         List<Class<?>> result = new ArrayList<>();
 
         ClassUtils.getFieldsUpToObject(mainClass).forEach(field -> {
-            if (field.isAnnotationPresent(Column.class)) {
+            if (pickFieldCondition(field)) {
                 Class<?> foreign = field.getAnnotation(Column.class).foreign();
                 if (foreign != Object.class) {
                     result.add(foreign);

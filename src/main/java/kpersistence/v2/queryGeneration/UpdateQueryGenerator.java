@@ -2,7 +2,7 @@ package kpersistence.v2.queryGeneration;
 
 import kpersistence.v2.UnnamedParametersQuery;
 import kpersistence.v2.modelsMaster.ModelsMaster;
-import kpersistence.v2.modelsMaster.TableModelForQueries;
+import kpersistence.v2.modelsMaster.queries.TableModelForAllDataQueries;
 import kpersistence.v2.tables.StringIdTable;
 
 import java.lang.reflect.Field;
@@ -10,17 +10,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class UpdateQueryGenerator {
 
     private final String userId;
 
-    private final TableModelForQueries tableModel;
+    private final TableModelForAllDataQueries tableModel;
     private final StringIdTable model;
 
     public UpdateQueryGenerator(StringIdTable model, String userId) {
-        tableModel = ModelsMaster.getQueryModel(model.getClass());
+        tableModel = ModelsMaster.getQueryAllDataModel(model.getClass());
         this.userId = userId;
         this.model = model;
 

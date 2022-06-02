@@ -1,14 +1,14 @@
-package kpersistence.v2.modelsMaster;
+package kpersistence.v2.modelsMaster.queries;
 
-import kpersistence.v2.annotations.Column;
-import kpersistence.v2.annotations.Foreign2;
-import kpersistence.v2.annotations.PersistenceAnnotationsUtils;
+import kpersistence.v2.annotations.*;
 import kutils.ClassUtils;
 
 import java.lang.reflect.Field;
 import java.util.*;
 
-public class TableModelForQueries {
+public abstract class TableModelForQueries {
+
+    private final Class<?> klass;
 
     private final String tableName;
     private final List<String> columns = new ArrayList<>();
@@ -18,12 +18,15 @@ public class TableModelForQueries {
     private final Map<String, List<String>> foreignTablesColumnsMap = new LinkedHashMap<>();
     private final Map<Field, Map<String, Field>> foreignLinkFieldsToColumnToFieldMap = new LinkedHashMap<>();
 
+    protected abstract boolean pickFieldCondition(Field field);
+
     public TableModelForQueries(Class<?> klass) {
+        this.klass = klass;
         this.tableName = PersistenceAnnotationsUtils.extractTableName(klass);
 
         List<Field> allFields = ClassUtils.getFieldsUpToObject(klass);
         allFields.forEach(field -> {
-            if (field.isAnnotationPresent(Column.class)) {
+            if (pickFieldCondition(field)) {
 
                 field.setAccessible(true);
 
@@ -44,7 +47,7 @@ public class TableModelForQueries {
         });
     }
 
-    void addForeign(Class<?> klass, String foreignIdColumn) {
+    private void addForeign(Class<?> klass, String foreignIdColumn) {
         String foreignTableName = PersistenceAnnotationsUtils.extractTableName(klass);
         List<Field> foreignFields = ClassUtils.getFieldsUpToObject(klass);
 
@@ -53,7 +56,7 @@ public class TableModelForQueries {
         List<String> foreignColumns = new ArrayList<>();
 
         foreignFields.forEach(field -> {
-            if (field.isAnnotationPresent(Column.class)) {
+            if (pickFieldCondition(field)) {
 
                 field.setAccessible(true);
 
@@ -64,14 +67,14 @@ public class TableModelForQueries {
         foreignTablesColumnsMap.put(foreignTableName, foreignColumns);
     }
 
-    void mapForeignLinkToTargetsFields(Field field) {
+    private void mapForeignLinkToTargetsFields(Field field) {
         field.setAccessible(true);
         Class<?> foreignClass = field.getType();
 
         Map<String, Field> foreignColumnToFieldMap = new LinkedHashMap<>();
 
         ClassUtils.getFieldsUpToObject(foreignClass).forEach(foreignField -> {
-            if (foreignField.isAnnotationPresent(Column.class)) {
+            if (pickFieldCondition(field)) {
                 foreignField.setAccessible(true);
 
                 String foreignColumn = foreignField.getAnnotation(Column.class).name();
@@ -80,6 +83,10 @@ public class TableModelForQueries {
         });
 
         foreignLinkFieldsToColumnToFieldMap.put(field, foreignColumnToFieldMap);
+    }
+
+    public Class<?> getKlass() {
+        return this.klass;
     }
 
     public String getTableName() {

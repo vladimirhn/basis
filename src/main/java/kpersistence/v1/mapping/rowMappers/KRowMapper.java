@@ -2,7 +2,7 @@ package kpersistence.v1.mapping.rowMappers;
 
 import kpersistence.v2.annotations.Column;
 import kpersistence.v1.mapping.annotations.Foreign;
-import kpersistence.v1.mapping.annotations.Label;
+import kpersistence.v2.annotations.Label;
 import kpersistence.v2.annotations.Table;
 import kutils.ClassUtils;
 

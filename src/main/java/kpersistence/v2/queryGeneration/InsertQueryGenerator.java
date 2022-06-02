@@ -2,7 +2,7 @@ package kpersistence.v2.queryGeneration;
 
 import kpersistence.v2.UnnamedParametersQuery;
 import kpersistence.v2.modelsMaster.ModelsMaster;
-import kpersistence.v2.modelsMaster.TableModelForQueries;
+import kpersistence.v2.modelsMaster.queries.TableModelForAllDataQueries;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -13,12 +13,12 @@ public class InsertQueryGenerator {
 
     private final String userId;
 
-    private final TableModelForQueries tableModel;
+    private final TableModelForAllDataQueries tableModel;
     private final Object model;
     private final String id;
 
     public InsertQueryGenerator(Object model, String userId, String id) {
-        tableModel = ModelsMaster.getQueryModel(model.getClass());
+        tableModel = ModelsMaster.getQueryAllDataModel(model.getClass());
         this.userId = userId;
         this.model = model;
         this.id = id;

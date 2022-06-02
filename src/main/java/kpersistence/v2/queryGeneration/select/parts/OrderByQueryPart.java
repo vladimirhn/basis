@@ -1,7 +1,7 @@
 package kpersistence.v2.queryGeneration.select.parts;
 
 import kpersistence.v2.annotations.Column;
-import kpersistence.v2.modelsMaster.TableModelForQueries;
+import kpersistence.v2.modelsMaster.queries.TableModelForQueries;
 
 import java.lang.reflect.Field;
 import java.util.Map;
