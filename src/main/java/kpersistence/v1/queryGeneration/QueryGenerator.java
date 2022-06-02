@@ -20,7 +20,7 @@ import kpersistence.v2.annotations.Column;
 import kpersistence.v2.annotations.Foreign2;
 import kpersistence.v2.annotations.Id;
 import kpersistence.v2.annotations.Table;
-import kpersistence.v2.queryGeneration.SelectAllQueryGenerator;
+import kpersistence.v2.queryGeneration.select.SelectAllQueryGenerator;
 import kutils.ClassUtils;
 
 public class QueryGenerator {
@@ -576,10 +576,10 @@ public class QueryGenerator {
     public static UnnamedParametersQuery createGetTableQuery(Class<?> klass) {
 
         String userId = currentUserIdProvider != null ? currentUserIdProvider.getCurrentUserId() : null;
-        SelectAllQueryGenerator generator = new SelectAllQueryGenerator(klass, "1234567");
+//        SelectAllQueryGenerator generator = new SelectAllQueryGenerator(klass, "1234567", "qqwe");
 
 
-        System.out.println(generator.generateSelectAllQuery());
+//        System.out.println(generator.generateSelectAllQuery());
 
         return new UnnamedParametersQuery("null", new ArrayList<>());
     }

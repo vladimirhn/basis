@@ -14,12 +14,14 @@ import java.util.stream.Collectors;
 
 public class UpdateQueryGenerator {
 
+    private final String userId;
+
     private final TableModelForQueries tableModel;
     private final StringIdTable model;
 
     public UpdateQueryGenerator(StringIdTable model, String userId) {
         tableModel = ModelsMaster.getQueryModel(model.getClass());
-        tableModel.setUserId(userId);
+        this.userId = userId;
         this.model = model;
 
         if (model.getId() == null) {
@@ -29,7 +31,6 @@ public class UpdateQueryGenerator {
 
     public UnnamedParametersQuery generateInsertQuery() {
 
-        String userId = tableModel.getUserId();
         String tableName = tableModel.getTableName();
 
         Map<String, Field> columnToFieldMap = tableModel.getColumnToFieldMap();

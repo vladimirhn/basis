@@ -11,20 +11,21 @@ import java.util.Map;
 
 public class InsertQueryGenerator {
 
+    private final String userId;
+
     private final TableModelForQueries tableModel;
     private final Object model;
     private final String id;
 
     public InsertQueryGenerator(Object model, String userId, String id) {
         tableModel = ModelsMaster.getQueryModel(model.getClass());
-        tableModel.setUserId(userId);
+        this.userId = userId;
         this.model = model;
         this.id = id;
     }
 
     public UnnamedParametersQuery generateInsertQuery() {
 
-        String userId = tableModel.getUserId();
         String tableName = tableModel.getTableName();
 
         Map<String, Field> columnToFieldMap = tableModel.getColumnToFieldMap();

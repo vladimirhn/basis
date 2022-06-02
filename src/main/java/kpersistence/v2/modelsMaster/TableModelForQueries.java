@@ -10,18 +10,16 @@ import java.util.*;
 
 public class TableModelForQueries {
 
-    private String userId;
-
     private final String tableName;
     private final List<String> columns = new ArrayList<>();
     private final Map<String, Field> columnToFieldMap = new LinkedHashMap<>();
-    private final Map<String, String> columnToParentNameMap = new LinkedHashMap<>();
-    private final Map<String, List<String>> parentTablesColumnsMap = new LinkedHashMap<>();
+    private final Map<String, Field> fieldNameToFieldMap = new LinkedHashMap<>();
+    private final Map<String, String> columnToForeignTableNameMap = new LinkedHashMap<>();
+    private final Map<String, List<String>> foreignTablesColumnsMap = new LinkedHashMap<>();
     private final Map<Field, Map<String, Field>> foreignLinkFieldsToColumnToFieldMap = new LinkedHashMap<>();
 
     public TableModelForQueries(Class<?> klass) {
         this.tableName = PersistenceAnnotationsUtils.extractTableName(klass);
-        this.userId = userId;
 
         List<Field> allFields = ClassUtils.getFieldsUpToObject(klass);
         allFields.forEach(field -> {
@@ -32,6 +30,7 @@ public class TableModelForQueries {
                 String columnName = field.getAnnotation(Column.class).name();
                 columns.add(columnName);
                 columnToFieldMap.put(columnName, field);
+                fieldNameToFieldMap.put(field.getName(), field);
 
                 if (!Objects.equals(field.getAnnotation(Column.class).foreign(), Object.class)) {
                     Class<?> foreignClass = field.getAnnotation(Column.class).foreign();
@@ -40,7 +39,7 @@ public class TableModelForQueries {
             }
 
             if (field.isAnnotationPresent(Foreign2.class)) {
-                mapForeignToItsFields(field);
+                mapForeignLinkToTargetsFields(field);
             }
         });
     }
@@ -49,7 +48,7 @@ public class TableModelForQueries {
         String foreignTableName = PersistenceAnnotationsUtils.extractTableName(klass);
         List<Field> foreignFields = ClassUtils.getFieldsUpToObject(klass);
 
-        columnToParentNameMap.put(foreignIdColumn, foreignTableName);
+        columnToForeignTableNameMap.put(foreignIdColumn, foreignTableName);
 
         List<String> foreignColumns = new ArrayList<>();
 
@@ -62,10 +61,10 @@ public class TableModelForQueries {
                 foreignColumns.add(foreignColumnName);
             }
         });
-        parentTablesColumnsMap.put(foreignTableName, foreignColumns);
+        foreignTablesColumnsMap.put(foreignTableName, foreignColumns);
     }
 
-    void mapForeignToItsFields(Field field) {
+    void mapForeignLinkToTargetsFields(Field field) {
         field.setAccessible(true);
         Class<?> foreignClass = field.getType();
 
@@ -83,14 +82,6 @@ public class TableModelForQueries {
         foreignLinkFieldsToColumnToFieldMap.put(field, foreignColumnToFieldMap);
     }
 
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
     public String getTableName() {
         return tableName;
     }
@@ -99,30 +90,23 @@ public class TableModelForQueries {
         return columns;
     }
 
-    public Map<String, String> getColumnToParentNameMap() {
-        return columnToParentNameMap;
+    public Map<String, String> getColumnToForeignTableNameMap() {
+        return columnToForeignTableNameMap;
     }
 
-    public Map<String, List<String>> getParentTablesColumnsMap() {
-        return parentTablesColumnsMap;
+    public Map<String, List<String>> getForeignTablesColumnsMap() {
+        return foreignTablesColumnsMap;
     }
 
     public Map<String, Field> getColumnToFieldMap() {
         return columnToFieldMap;
     }
 
-    public Map<Field, Map<String, Field>> getForeignLinkFieldsToColumnToFieldMap() {
-        return foreignLinkFieldsToColumnToFieldMap;
+    public Map<String, Field> getFieldNameToFieldMap() {
+        return fieldNameToFieldMap;
     }
 
-    @Override
-    public String toString() {
-        return "QueryModel{" +
-                "userId='" + userId + '\'' +
-                ", tableName='" + tableName + '\'' +
-                ", columns=" + columns +
-                ", parentTablesColumnsMap=" + parentTablesColumnsMap +
-                ", columnToParentNameMap=" + columnToParentNameMap +
-                '}';
+    public Map<Field, Map<String, Field>> getForeignLinkFieldsToColumnToFieldMap() {
+        return foreignLinkFieldsToColumnToFieldMap;
     }
 }
