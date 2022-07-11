@@ -1,4 +1,4 @@
-package kpersistence.v1.types;
+package kpersistence.v2.types;
 
 public interface SoftDelete {
 
