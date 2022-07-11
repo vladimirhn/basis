@@ -6,8 +6,10 @@ import kpersistence.v2.modelsMaster.mapping.TableModelForLabelsMapping;
 import kpersistence.v2.modelsMaster.mapping.TableModelForMapping;
 import kpersistence.v2.modelsMaster.queries.TableModelForAllDataQueries;
 import kpersistence.v2.modelsMaster.queries.TableModelForLabelsQueries;
+import kpersistence.v2.modelsMaster.schema.TableDescription;
 import kutils.PackageUtils;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,31 +25,37 @@ public class ModelsMaster {
     }
 
     public static final Map<Class<?>, Bunch> classBunchMap = new LinkedHashMap<>();
+    public static final List<TableDescription> schemaDescription = new ArrayList<>();
 
     public ModelsMaster(String packageName) {
 
         System.out.println("Scanning: " + packageName + " for model classes");
 
         try {
-
             List<Class<?>> models = PackageUtils.getClassesRecursively(packageName).stream()
-                     .filter(klass -> klass.isAnnotationPresent(Table.class))
-                     .collect(Collectors.toList());
+                    .filter(klass -> klass.isAnnotationPresent(Table.class))
+                    .collect(Collectors.toList());
 
-             models.forEach(klass -> {
+            models.forEach(klass -> {
 
-                 Bunch bunch = new Bunch();
-                 bunch.queryAllDataModel = new TableModelForAllDataQueries(klass);
-                 bunch.queryLabelsModel = new TableModelForLabelsQueries(klass);
-                 bunch.mappingAllDataModel = new TableModelForAllDataMapping(klass);
-                 bunch.mappingLabelsModel = new TableModelForLabelsMapping(klass);
+                Bunch bunch = new Bunch();
+                bunch.queryAllDataModel = new TableModelForAllDataQueries(klass);
+                bunch.queryLabelsModel = new TableModelForLabelsQueries(klass);
+                bunch.mappingAllDataModel = new TableModelForAllDataMapping(klass);
+                bunch.mappingLabelsModel = new TableModelForLabelsMapping(klass);
 
-                 classBunchMap.put(klass, bunch);
-             });
+                classBunchMap.put(klass, bunch);
+
+                schemaDescription.add(new TableDescription(klass));
+            });
 
         } catch (ClassNotFoundException ex) {
             ex.printStackTrace();
         }
+    }
+
+    public static Map<Class<?>, Bunch> getClassBunchMap() {
+        return classBunchMap;
     }
 
     public static TableModelForAllDataQueries getQueryAllDataModel(Class<?> klass) {
@@ -65,5 +73,8 @@ public class ModelsMaster {
         return classBunchMap.get(klass).mappingLabelsModel;
     }
 
+    public static List<TableDescription> getSchemaDescription() {
+        return schemaDescription;
+    }
 }
 

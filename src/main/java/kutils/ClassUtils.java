@@ -2,6 +2,7 @@ package kutils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,5 +60,31 @@ public class ClassUtils {
             }
         }
         return result;
+    }
+
+    public static <E, T> T createInstanceByExample(E example, Class<T> instanceClass) {
+
+        T instance = null;
+
+        try {
+            instance = instanceClass.getDeclaredConstructor().newInstance();
+
+            for (Field exField : ClassUtils.getFieldsUpToObject(example.getClass())) {
+                Field insField = ClassUtils.getFieldByName(instanceClass, exField.getName());
+
+                if (insField != null && exField.getType().equals(insField.getType())) {
+                    exField.setAccessible(true);
+                    insField.setAccessible(true);
+
+                    insField.set(instance, exField.get(example));
+                }
+            }
+
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            e.printStackTrace();
+            throw new IllegalArgumentException(instanceClass.getSimpleName() + "doesn't have a no args public constructor");
+        }
+
+        return instance;
     }
 }

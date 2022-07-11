@@ -6,7 +6,7 @@ import kpersistence.v2.annotations.Id;
 public abstract class StringIdTable extends Table {
 
     @Id
-    @Column(name = "ID")
+    @Column(name = "ID", type = "id")
     private String id;
 
     public abstract void setDefaults();

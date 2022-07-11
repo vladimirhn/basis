@@ -1,13 +1,11 @@
 package kpersistence.v2.queryGeneration.select;
 
 import kpersistence.v2.UnnamedParametersQuery;
-import kpersistence.v2.modelsMaster.ModelsMaster;
-import kpersistence.v2.modelsMaster.queries.TableModelForAllDataQueries;
 import kpersistence.v2.modelsMaster.queries.TableModelForQueries;
 import kpersistence.v2.queryGeneration.select.parts.PredicatesQueryPart;
 import kpersistence.v2.queryGeneration.select.parts.SelectFromQueryPart;
 import kpersistence.v2.queryGeneration.select.parts.WhereUserIdQueryPart;
-import kpersistence.v2.tables.StringIdTable;
+import kpersistence.v2.tables.Table;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,9 +17,9 @@ public class SelectFilteredQueryGenerator {
     StringBuilder sql = new StringBuilder();
 
     private final TableModelForQueries tableModel;
-    private StringIdTable mainTable;
+    private Table mainTable;
 
-    public SelectFilteredQueryGenerator(TableModelForQueries tableModel, StringIdTable mainTable, String userId) {
+    public SelectFilteredQueryGenerator(TableModelForQueries tableModel, Table mainTable, String userId) {
         this.tableModel = tableModel;
         this.userId = userId;
         this.mainTable = mainTable;

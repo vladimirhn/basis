@@ -3,7 +3,7 @@ package kpersistence.v2.queryGeneration.select.parts;
 import kpersistence.v2.annotations.PersistenceAnnotationsUtils;
 import kpersistence.v2.modelsMaster.ModelsMaster;
 import kpersistence.v2.modelsMaster.queries.TableModelForAllDataQueries;
-import kpersistence.v2.tables.StringIdTable;
+import kpersistence.v2.tables.Table;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -13,7 +13,7 @@ public class PredicatesQueryPart {
 
     StringBuilder sql = new StringBuilder();
 
-    public PredicatesQueryPart(StringIdTable mainTable, List<Object> params) {
+    public PredicatesQueryPart(Table mainTable, List<Object> params) {
         TableModelForAllDataQueries tableModel = ModelsMaster.getQueryAllDataModel(mainTable.getClass());
         String tableName = tableModel.getTableName();
         Map<String, Field> columnToFieldMap = tableModel.getColumnToFieldMap();
