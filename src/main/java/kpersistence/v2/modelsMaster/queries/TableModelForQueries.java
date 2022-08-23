@@ -1,6 +1,7 @@
 package kpersistence.v2.modelsMaster.queries;
 
 import kpersistence.v2.annotations.*;
+import kpersistence.v2.types.SoftDelete;
 import kutils.ClassUtils;
 
 import java.lang.reflect.Field;
@@ -9,6 +10,7 @@ import java.util.*;
 public abstract class TableModelForQueries {
 
     private final Class<?> klass;
+    private final boolean isSoftDelete;
 
     private final String tableName;
     private final List<String> columns = new ArrayList<>();
@@ -22,6 +24,7 @@ public abstract class TableModelForQueries {
 
     public TableModelForQueries(Class<?> klass) {
         this.klass = klass;
+        this.isSoftDelete = SoftDelete.class.isAssignableFrom(klass);
         this.tableName = PersistenceAnnotationsUtils.extractTableName(klass);
 
         List<Field> allFields = ClassUtils.getFieldsUpToObject(klass);
@@ -87,6 +90,10 @@ public abstract class TableModelForQueries {
 
     public Class<?> getKlass() {
         return this.klass;
+    }
+
+    public boolean isSoftDelete() {
+        return isSoftDelete;
     }
 
     public String getTableName() {
