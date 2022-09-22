@@ -2,7 +2,7 @@ package kpersistence.v1.query;
 
 import kcollections.CollectionFactory;
 import kcollections.KList;
-import kpersistence.v1.mapping.annotations.Direction;
+import kpersistence.v2.annotations.Direction;
 
 
 public class QueryProperties<T> {

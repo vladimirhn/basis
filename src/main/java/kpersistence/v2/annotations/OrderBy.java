@@ -1,4 +1,4 @@
-package kpersistence.v1.mapping.annotations;
+package kpersistence.v2.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -9,5 +9,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface OrderBy {
     Direction direction() default Direction.ASC;
+    int priority() default 999;
 }
 

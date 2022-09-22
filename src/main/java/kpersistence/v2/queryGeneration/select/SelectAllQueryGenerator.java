@@ -33,7 +33,9 @@ public class SelectAllQueryGenerator {
 
         sql.append(new SelectFromQueryPart(tableModel));
         sql.append(new WhereQueryPart(tableModel, userId, params, isSoftDelete));
-        sql.append(new OrderByQueryPart(tableModel, orderByFieldName, direction));
+        sql.append(orderByFieldName != null ?
+                new OrderByQueryPart(tableModel, orderByFieldName, direction) :
+                new OrderByQueryPart(tableModel));
 
         return new UnnamedParametersQuery(sql.toString(), params);
     }

@@ -1,5 +1,6 @@
 package kpersistence.v2.modelsMaster.queries;
 
+import kpersistence.v2.annotations.OrderBy;
 import kpersistence.v2.annotations.*;
 import kpersistence.v2.types.SoftDelete;
 import kutils.ClassUtils;
@@ -14,6 +15,7 @@ public abstract class TableModelForQueries {
 
     private final String tableName;
     private final List<String> columns = new ArrayList<>();
+    private final List<Field> orderByFields = new ArrayList<>();
     private final Map<String, Field> columnToFieldMap = new LinkedHashMap<>();
     private final Map<String, Field> fieldNameToFieldMap = new LinkedHashMap<>();
     private final Map<String, String> columnToForeignTableNameMap = new LinkedHashMap<>();
@@ -42,11 +44,17 @@ public abstract class TableModelForQueries {
                     Class<?> foreignClass = field.getAnnotation(Column.class).foreign();
                     addForeign(foreignClass, columnName);
                 }
+
+                if (field.isAnnotationPresent(OrderBy.class)) {
+                    orderByFields.add(field);
+                }
             }
 
             if (field.isAnnotationPresent(Foreign2.class)) {
                 mapForeignLinkToTargetsFields(field);
             }
+
+
         });
     }
 
@@ -102,6 +110,10 @@ public abstract class TableModelForQueries {
 
     public List<String> getColumns() {
         return columns;
+    }
+
+    public List<Field> getOrderByFields() {
+        return orderByFields;
     }
 
     public Map<String, String> getColumnToForeignTableNameMap() {
