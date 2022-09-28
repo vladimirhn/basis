@@ -1,27 +1,31 @@
-package kpersistence.v2.queryGeneration;
+package kpersistence.v2.queryGeneration.change;
 
 import kpersistence.v2.UnnamedParametersQuery;
 import kpersistence.v2.modelsMaster.ModelsMaster;
 import kpersistence.v2.modelsMaster.queries.TableModelForAllDataQueries;
+import kpersistence.v2.tables.StringIdTable;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-public class InsertQueryGenerator {
+public class UpdateQueryGenerator {
 
     private final String userId;
 
     private final TableModelForAllDataQueries tableModel;
-    private final Object model;
-    private final String id;
+    private final StringIdTable model;
 
-    public InsertQueryGenerator(Object model, String userId, String id) {
+    public UpdateQueryGenerator(StringIdTable model, String userId) {
         tableModel = ModelsMaster.getQueryAllDataModel(model.getClass());
         this.userId = userId;
         this.model = model;
-        this.id = id;
+
+        if (model.getId() == null) {
+            throw new IllegalArgumentException("Being updated model must have an id. This one does not: " + model);
+        }
     }
 
     public UnnamedParametersQuery generateInsertQuery() {
@@ -33,30 +37,29 @@ public class InsertQueryGenerator {
         StringBuilder sql = new StringBuilder();
         List<Object> params = new ArrayList<>();
 
-        sql.append("INSERT INTO ").append(tableName);
-
-        StringBuilder columns = new StringBuilder(" (ID");
-        StringBuilder values = new StringBuilder(" VALUES (?");
-        params.add(id);
+        sql.append("UPDATE ").append(tableName).append(" SET ");
+        List<String> columnsEquals = new ArrayList<>(); // "COL_NAME = ?"
 
         columnToFieldMap.forEach((column, field) -> {
             try {
-                Object datum = field.get(model);
-                if (datum != null) {
-                    columns.append(", ").append(column);
-                    values.append(", ?");
+                if (!Objects.equals(column, "ID")) {
+                    Object datum = field.get(model);
+
+                    columnsEquals.add(column + " = ?");
                     params.add(datum);
                 }
+
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
         });
 
-        columns.append(", USER_ID)");
-        values.append(", ?)");
-        params.add(userId);
+        sql.append(String.join(", ", columnsEquals));
 
-        sql.append(columns).append(values);
+        sql.append(" WHERE USER_ID = ? AND ID = ?");
+        params.add(userId);
+        params.add(model.getId());
+
 
         return new UnnamedParametersQuery(sql.toString(), params);
     }

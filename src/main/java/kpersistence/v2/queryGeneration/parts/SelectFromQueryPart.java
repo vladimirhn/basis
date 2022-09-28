@@ -1,4 +1,4 @@
-package kpersistence.v2.queryGeneration.select.parts;
+package kpersistence.v2.queryGeneration.parts;
 
 import kpersistence.v2.modelsMaster.queries.TableModelForQueries;
 

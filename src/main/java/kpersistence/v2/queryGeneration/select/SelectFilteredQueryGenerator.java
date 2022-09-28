@@ -2,9 +2,9 @@ package kpersistence.v2.queryGeneration.select;
 
 import kpersistence.v2.UnnamedParametersQuery;
 import kpersistence.v2.modelsMaster.queries.TableModelForQueries;
-import kpersistence.v2.queryGeneration.select.parts.PredicatesQueryPart;
-import kpersistence.v2.queryGeneration.select.parts.SelectFromQueryPart;
-import kpersistence.v2.queryGeneration.select.parts.WhereQueryPart;
+import kpersistence.v2.queryGeneration.parts.PredicatesQueryPart;
+import kpersistence.v2.queryGeneration.parts.SelectFromQueryPart;
+import kpersistence.v2.queryGeneration.parts.WhereQueryPart;
 import kpersistence.v2.tables.Table;
 
 import java.util.ArrayList;

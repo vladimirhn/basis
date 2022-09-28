@@ -1,27 +1,26 @@
-package kpersistence.v2.queryGeneration;
+package kpersistence.v2.queryGeneration.change;
 
 import kpersistence.v2.UnnamedParametersQuery;
 import kpersistence.v2.modelsMaster.ModelsMaster;
 import kpersistence.v2.modelsMaster.queries.TableModelForAllDataQueries;
+import kpersistence.v2.queryGeneration.parts.PredicatesQueryPart;
+import kpersistence.v2.tables.Table;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DeleteQueryGenerator {
+public class DeleteSimilarQueryGenerator<T extends Table> {
 
-    private final String id;
+    private final T data;
     private final String userId;
     private final String tableName;
     private final boolean isSoftDelete;
 
-    public DeleteQueryGenerator(Class<?> model, String id, String userId) {
-        if (id == null) {
-            throw new IllegalArgumentException("Being deleted model must have an id. This one does not: " + model);
-        }
+    public DeleteSimilarQueryGenerator(Class<T> model, T data, String userId) {
 
         TableModelForAllDataQueries tableModel = ModelsMaster.getQueryAllDataModel(model);
 
-        this.id = id;
+        this.data = data;
         this.userId = userId;
         this.tableName = tableModel.getTableName();
         this.isSoftDelete = tableModel.isSoftDelete();
@@ -41,9 +40,9 @@ public class DeleteQueryGenerator {
             sql.append("DELETE FROM ").append(tableName);
         }
 
-        sql.append(" WHERE USER_ID = ? AND ID = ?");
+        sql.append(" WHERE USER_ID = ? ");
         params.add(userId);
-        params.add(id);
+        sql.append(new PredicatesQueryPart(data, params));
 
         return new UnnamedParametersQuery(sql.toString(), params);
     }

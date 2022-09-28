@@ -36,22 +36,23 @@ public class ModelsMaster {
                     .filter(klass -> klass.isAnnotationPresent(Table.class))
                     .collect(Collectors.toList());
 
-            models.forEach(klass -> {
-
-                Bunch bunch = new Bunch();
-                bunch.queryAllDataModel = new TableModelForAllDataQueries(klass);
-                bunch.queryLabelsModel = new TableModelForLabelsQueries(klass);
-                bunch.mappingAllDataModel = new TableModelForAllDataMapping(klass);
-                bunch.mappingLabelsModel = new TableModelForLabelsMapping(klass);
-
-                classBunchMap.put(klass, bunch);
-
-                schemaDescription.add(new TableDescription(klass));
-            });
+            models.forEach(this::addClass);
 
         } catch (ClassNotFoundException ex) {
             ex.printStackTrace();
         }
+    }
+
+    public void addClass(Class<?> klass) {
+        Bunch bunch = new Bunch();
+        bunch.queryAllDataModel = new TableModelForAllDataQueries(klass);
+        bunch.queryLabelsModel = new TableModelForLabelsQueries(klass);
+        bunch.mappingAllDataModel = new TableModelForAllDataMapping(klass);
+        bunch.mappingLabelsModel = new TableModelForLabelsMapping(klass);
+
+        classBunchMap.put(klass, bunch);
+
+        schemaDescription.add(new TableDescription(klass));
     }
 
     public static Map<Class<?>, Bunch> getClassBunchMap() {
