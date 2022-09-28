@@ -3,7 +3,6 @@ package kpersistence.modelsMaster.queries;
 import kpersistence.annotations.Column;
 import kpersistence.annotations.Foreign;
 import kpersistence.annotations.OrderBy;
-import kpersistence.v2.annotations.*;
 import kpersistence.annotations.PersistenceAnnotationsUtils;
 import kpersistence.types.SoftDelete;
 import kutils.ClassUtils;
