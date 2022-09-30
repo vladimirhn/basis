@@ -3,6 +3,7 @@ package kpersistence.queryGeneration.change;
 import kpersistence.UnnamedParametersQuery;
 import kpersistence.modelsMaster.ModelsMaster;
 import kpersistence.modelsMaster.queries.TableModelForAllDataQueries;
+import kpersistence.tables.UserIdTable;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -52,9 +53,14 @@ public class InsertQueryGenerator {
             }
         });
 
-        columns.append(", USER_ID)");
-        values.append(", ?)");
-        params.add(userId);
+        if (model instanceof UserIdTable) {
+            columns.append(", USER_ID)");
+            values.append(", ?)");
+            params.add(userId);
+        } else {
+            columns.append(")");
+            values.append(")");
+        }
 
         sql.append(columns).append(values);
 

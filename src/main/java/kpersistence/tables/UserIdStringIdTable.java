@@ -1,6 +1,6 @@
 package kpersistence.tables;
 
-public abstract class UserIdStringIdTable extends StringIdTable {
+public abstract class UserIdStringIdTable extends StringIdTable implements UserIdTable {
 
     private String userId;
 
